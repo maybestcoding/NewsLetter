@@ -26,7 +26,7 @@ app.post("/", function(req, res) {
   const jasonData = JSON.stringify(data);
   const options = {
     method: "POST",
-    auth: "Mayi:527d066778efdd93a598273d356e973f-us20"
+    auth: "Mayi:25e9ca443c55b49b5d5079b393042baf-us20"
   }
 
   url = "https://us20.api.mailchimp.com/3.0/lists/30b1b228f9"
