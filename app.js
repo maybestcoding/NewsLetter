@@ -5,7 +5,7 @@ const app = express();
 app.use(express.static("public"));
 app.use(bodyParser.urlencoded({extended:true}));
 app.get("/", function(req, res) {
-  res.sendFile(__dirname+"/signup.html")
+  res.sendFile(__dirname+"/index.html")
 });
 
 app.post("/", function(req, res) {
@@ -26,7 +26,7 @@ app.post("/", function(req, res) {
   };
 
   const jasonData = JSON.stringify(data);
-  const apiKey = 'ac71c12ae65ffb5883d5c1e32d1391f0-us9';
+  const apiKey = '16e3a307bbcd6cc53ae02b42bfd46e49-us9';
 const datacenter = apiKey.split('-')[1];  // Extract datacenter from API key
 const audienceId = 'a3b7a77982';  // Replace with your actual audience ID
 const url = `https://${datacenter}.api.mailchimp.com/3.0/lists/${audienceId}`;
