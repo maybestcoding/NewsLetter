@@ -4,72 +4,70 @@ const https = require("https");
 const path = require('path');
 const app = express();
 require('dotenv').config();
+
 const mailchimpApiKey = process.env.MAILCHIMP_API_KEY;
 
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(path.join(__dirname, 'public')));
 
-app.use(bodyParser.urlencoded({extended:true}));
-app.get("/", function(req, res) {
-  res.sendFile(__dirname+"/index.html")
-  
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.post("/", function(req, res) {
-  const firstName = req.body.fName;
-  const lastName = req.body.lName;
-  const email = req.body. email;
+app.post("/", (req, res) => {
+  const { fName: firstName, lName: lastName, email } = req.body;
   const data = {
-    members : [
+    members: [
       {
         email_address: email,
-        status : "subscribed",
-        merge_fields : {
-          FNAME : firstName,
-          LNAME : lastName
+        status: "subscribed",
+        merge_fields: {
+          FNAME: firstName,
+          LNAME: lastName
         }
       }
     ]
   };
 
-  const jasonData = JSON.stringify(data);
-  
-const datacenter = mailchimpApiKey.split('-')[1].replace(/"/g, '').trim();  // Extract datacenter from API key
-console.log(datacenter)
-const audienceId = 'a3b7a77982';  // Replace with your actual audience ID
-const url = `https://${datacenter}.api.mailchimp.com/3.0/lists/${audienceId}`;
+  const jsonData = JSON.stringify(data);
+  const datacenter = mailchimpApiKey.split('-')[1].trim(); // Extract datacenter from API key
+  const audienceId = 'a3b7a77982'; // Replace with your actual audience ID
+  const url = `https://${datacenter}.api.mailchimp.com/3.0/lists/${audienceId}`;
 
-const options = {
+  const options = {
     method: 'POST',
     headers: {
-        'Authorization': `Bearer ${mailchimpApiKey}`,
-        'Content-Type': 'application/json'
+      'Authorization': `Bearer ${mailchimpApiKey}`,
+      'Content-Type': 'application/json'
     }
-};
+  };
 
-  
-  const request = https.request(url, options, function(response){
-    if (response.statusCode === 200){
-      console.log(response.statusCode)
-        res.sendFile(path.join(__dirname, 'success.html'));
-      }
-      else {
-        console.log(response.statusCode)
-        res.sendFile(path.join(__dirname,"/fail.html"));
-      }
-    response.on("data", function(data){
+  const request = https.request(url, options, (response) => {
+    if (response.statusCode === 200) {
+      res.sendFile(path.join(__dirname, 'public', 'success.html'));
+    } else {
+      res.sendFile(path.join(__dirname, 'public', 'fail.html'));
+    }
+    response.on("data", (data) => {
       console.log(JSON.parse(data));
-    })
-  })
-  request.write(jasonData);
+    });
+  });
+
+  request.on('error', (e) => {
+    console.error(e);
+    res.sendFile(path.join(__dirname, 'public', 'fail.html'));
+  });
+
+  request.write(jsonData);
   request.end();
 });
 
-app.post("/fail", function(req, res) {
+app.post("/fail", (req, res) => {
   res.redirect("/");
-})
-
-app.listen(process.env.PORT || 3000, function() {
-  console.log("Server started port 3000");
 });
 
-
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server started on port ${port}`);
+});
