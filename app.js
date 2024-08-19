@@ -1,11 +1,17 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const https = require("https");
+const path = require('path');
 const app = express();
-app.use(express.static("public"));
+require('dotenv').config();
+const mailchimpApiKey = process.env.MAILCHIMP_API_KEY;
+
+app.use(express.static(path.join(__dirname)));
+
 app.use(bodyParser.urlencoded({extended:true}));
 app.get("/", function(req, res) {
   res.sendFile(__dirname+"/index.html")
+  
 });
 
 app.post("/", function(req, res) {
@@ -26,33 +32,29 @@ app.post("/", function(req, res) {
   };
 
   const jasonData = JSON.stringify(data);
-  const apiKey = '16e3a307bbcd6cc53ae02b42bfd46e49-us9';
-const datacenter = apiKey.split('-')[1];  // Extract datacenter from API key
+  
+const datacenter = mailchimpApiKey.split('-')[1].replace(/"/g, '').trim();  // Extract datacenter from API key
+console.log(datacenter)
 const audienceId = 'a3b7a77982';  // Replace with your actual audience ID
 const url = `https://${datacenter}.api.mailchimp.com/3.0/lists/${audienceId}`;
 
 const options = {
     method: 'POST',
     headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${mailchimpApiKey}`,
         'Content-Type': 'application/json'
     }
 };
-  // const options = {
-  //   method: "POST",
-  //   auth: "Mayi:ac71c12ae65ffb5883d5c1e32d1391f0-us9"
-  // }
-  // url="https://us9.admin.mailchimp.com/lists/members/?id=a3b7a77982"
 
-  // url = "https://us9.api.mailchimp.com/3.0/lists/a3b7a77982"
+  
   const request = https.request(url, options, function(response){
     if (response.statusCode === 200){
       console.log(response.statusCode)
-        res.sendFile(__dirname + "/success.html");
+        res.sendFile(path.join(__dirname, 'success.html'));
       }
       else {
         console.log(response.statusCode)
-        res.sendFile(__dirname + "/fail.html");
+        res.sendFile(path.join(__dirname,"/fail.html"));
       }
     response.on("data", function(data){
       console.log(JSON.parse(data));
@@ -69,22 +71,5 @@ app.post("/fail", function(req, res) {
 app.listen(process.env.PORT || 3000, function() {
   console.log("Server started port 3000");
 });
-
-
-
-// const options = {
-//   method: "POST",
-//   auth: "Mayi:25e9ca443c55b49b5d5079b393042baf-us20"
-// }
-
-// url = "https://us20.api.mailchimp.com/3.0/lists/30b1b228f9"
-// ac71c12ae65ffb5883d5c1e32d1391f0-us9
-//  auth: "Mayi:ac71c12ae65ffb5883d5c1e32d1391f0-us9"
-
-
-//url = "https://us9.admin.mailchimp.com/audience/add-contact?id=1036028"
-  
-  
-// a3b7a77982
 
 
